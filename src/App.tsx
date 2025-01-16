@@ -1,41 +1,49 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Route, Routes, Link, useLocation } from 'react-router-dom';
-import { 
-  GraduationCap, 
-  User, 
-  Menu, 
-  X, 
-  LogOut, 
+import React, { useState, useRef, useEffect } from "react";
+import { Route, Routes, Link, useLocation } from "react-router-dom";
+import {
+  GraduationCap,
+  User,
+  Menu,
+  X,
+  LogOut,
   ChevronDown,
-  Chrome // Added for fallback Google icon
-} from 'lucide-react';
-import { useAuth } from './components/AuthContext';
-import { signOut, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { auth } from './components/firebase';
-import GoogleIcon from './assets/google.svg';
+  Chrome, // Added for fallback Google icon
+} from "lucide-react";
+import { useAuth } from "./components/AuthContext";
+import { signOut, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { auth } from "./components/firebase";
+import GoogleIcon from "./assets/google.svg";
 
-import LearningPath from './components/LearningPath';
-import TopicContent from './components/TopicContent';
-import ProfilePage from './components/ProfilePage';
-import Home from './components/Home';
-import PrivateRoute from './components/PrivateRoute';
+import LearningPath from "./components/LearningPath";
+import TopicContent from "./components/TopicContent";
+import ProfilePage from "./components/ProfilePage";
+import Home from "./components/Home";
+import PrivateRoute from "./components/PrivateRoute";
+import LoginPage from "./components/LoginPage";
 
-const NavLink: React.FC<{ to: string; children: React.ReactNode }> = ({ to, children }) => {
+const NavLink: React.FC<{ to: string; children: React.ReactNode }> = ({
+  to,
+  children,
+}) => {
   const location = useLocation();
   const isActive = location.pathname === to;
-  
+
   return (
     <Link
       to={to}
       className="relative group px-4 py-2 rounded-full transition-all duration-200"
     >
-      <div className={`flex items-center space-x-2 relative z-10
-        ${isActive ? 'text-white' : 'text-gray-600 hover:text-gray-900'}`}>
+      <div
+        className={`flex items-center space-x-2 relative z-10
+        ${isActive ? "text-white" : "text-gray-600 hover:text-gray-900"}`}
+      >
         {children}
       </div>
       {isActive && (
-        <div className="absolute inset-0 bg-black rounded-full -z-0 
-                      transition-all duration-300 ease-in-out" />
+        <div
+          className="absolute inset-0 bg-black rounded-full -z-0 
+                      transition-all duration-300 ease-in-out"
+        />
       )}
     </Link>
   );
@@ -47,14 +55,18 @@ interface ProfileDropdownProps {
   handleGoogleLogin: () => void;
 }
 
-const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user, handleLogout, handleGoogleLogin }) => {
+const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
+  user,
+  handleLogout,
+  handleGoogleLogin,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const GoogleIconSVG = () => (
-    <svg 
-      viewBox="0 0 24 24" 
-      width="20" 
-      height="20" 
+    <svg
+      viewBox="0 0 24 24"
+      width="20"
+      height="20"
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
@@ -77,13 +89,16 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user, handleLogout, h
   );
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -142,12 +157,12 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user, handleLogout, h
 function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, loading } = useAuth();
-  
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error("Error signing out:", error);
     }
   };
 
@@ -156,7 +171,7 @@ function App() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (error) {
-      console.error('Error signing in with Google:', error);
+      console.error("Error signing in with Google:", error);
     }
   };
 
@@ -167,7 +182,7 @@ function App() {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
@@ -176,8 +191,8 @@ function App() {
           <div className="flex justify-between h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="flex items-center space-x-2 text-black font-semibold text-lg"
               >
                 <GraduationCap className="w-6 h-6" />
@@ -273,7 +288,15 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/learning-path" element={<LearningPath />} />
-          <Route path="/topic/:topicId" element={<TopicContent />} />
+          {/* Protect the topic content route */}
+          <Route
+            path="/topic/:topicId"
+            element={
+              <PrivateRoute>
+                <TopicContent />
+              </PrivateRoute>
+            }
+          />
           <Route
             path="/profile"
             element={
@@ -282,6 +305,7 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route path="/login" element={<LoginPage />} />
         </Routes>
       </main>
     </div>
