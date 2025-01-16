@@ -1,66 +1,121 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Shield, Brain, Code, Database, LucideProps } from 'lucide-react';
+import { 
+  BookOpen, 
+  Brain, 
+  Code, 
+  Database,
+  Shield,
+  BarChart2,
+  Settings,
+  Cloud,
+  Terminal,
+  LucideProps 
+} from 'lucide-react';
 
 export const topics = [
   {
     id: 1,
-    title: 'Introduction',
-    completed: true,
+    title: 'Foundations of AI & ML',
+    completed: false,
     icon: BookOpen,
     side: 'left',
     subtopics: [
-      'What is an AI Engineer?',
-      'Roles and Responsibilities',
-      'Impact on Product Development'
+      'AI vs ML vs Deep Learning',
+      'Types of Machine Learning',
+      'ML Development Lifecycle',
+      'Data Science Environment Setup'
     ]
   },
   {
     id: 2,
-    title: 'Pre-trained Models',
-    completed: true,
+    title: 'Working with Pre-trained Models',
+    completed: false,
     icon: Brain,
     side: 'right',
     subtopics: [
-      'Using Pre-trained Models',
-      'Capabilities / Context Length',
-      'Benefits and Limitations'
+      'Understanding Model Capabilities',
+      'Model Selection Criteria',
+      'Fine-tuning Strategies',
+      'Model Evaluation Metrics'
     ]
   },
   {
     id: 3,
-    title: 'OpenAI Platform',
-    completed: true,
-    icon: Code,
-    side: 'left',
-    subtopics: [
-      'OpenAI Models',
-      'API Integration',
-      'Best Practices'
-    ]
-  },
-  {
-    id: 4,
-    title: 'AI Safety and Ethics',
-    completed: false,
-    icon: Shield,
-    side: 'right',
-    subtopics: [
-      'Safety Considerations',
-      'Ethical Guidelines',
-      'Responsible AI Development'
-    ]
-  },
-  {
-    id: 5,
-    title: 'Open Source AI',
+    title: 'Data Engineering for AI',
     completed: false,
     icon: Database,
     side: 'left',
     subtopics: [
-      'Popular Open Source Models',
-      'Community Contributions',
-      'Implementation Strategies'
+      'Data Preprocessing Pipelines',
+      'Feature Engineering',
+      'Data Validation & Quality',
+      'ETL Processes'
+    ]
+  },
+  {
+    id: 4,
+    title: 'ML Model Development',
+    completed: false,
+    icon: BarChart2,  // Changed from Graph to BarChart2
+    side: 'right',
+    subtopics: [
+      'Supervised Learning Techniques',
+      'Unsupervised Learning Methods',
+      'Model Optimization',
+      'Ensemble Approaches'
+    ]
+  },
+  {
+    id: 5,
+    title: 'AI Systems Integration',
+    completed: false,
+    icon: Settings,
+    side: 'left',
+    subtopics: [
+      'API Development',
+      'Model Serving',
+      'System Architecture',
+      'Performance Optimization'
+    ]
+  },
+  {
+    id: 6,
+    title: 'MLOps & Deployment',
+    completed: false,
+    icon: Cloud,
+    side: 'right',
+    subtopics: [
+      'Model Versioning',
+      'Deployment Strategies',
+      'Monitoring & Logging',
+      'Infrastructure Management'
+    ]
+  },
+  {
+    id: 7,
+    title: 'AI Safety & Ethics',
+    completed: false,
+    icon: Shield,
+    side: 'left',
+    subtopics: [
+      'Responsible AI Development',
+      'Bias Detection & Mitigation',
+      'Privacy Considerations',
+      'Security Best Practices'
+    ]
+  },
+  {
+    id: 8,
+    title: 'Advanced AI Engineering',
+    completed: false,
+    icon: Terminal,
+    side: 'right',
+    subtopics: [
+      'Large Language Models',
+      'Custom Model Development',
+      'Scaling AI Systems',
+      'Production Optimization'
     ]
   }
 ];
@@ -111,8 +166,6 @@ const TopicCard = ({ topic }: { topic: Topic }) => {
 
 const LearningPath = () => {
   const progress = (topics.filter(t => t.completed).length / topics.length) * 100;
-  
-  // Find the index where completion status changes
   const lastCompletedIndex = topics.findIndex(topic => !topic.completed) - 1;
 
   return (
@@ -134,7 +187,6 @@ const LearningPath = () => {
       </div>
 
       <div className="relative max-w-3xl mx-auto">
-        {/* Central timeline with gradient transition */}
         <div className="absolute left-1/2 top-0 w-0.5 h-full transform -translate-x-1/2">
           <div 
             className="absolute top-0 left-0 w-full bg-blue-500 transition-all duration-500"
@@ -163,12 +215,10 @@ const LearningPath = () => {
                  className={`flex items-center justify-center mb-8 relative ${
                    topic.side === 'left' ? 'flex-row' : 'flex-row-reverse'
                  }`}>
-              {/* Content side */}
               <div className={`w-1/2 ${topic.side === 'left' ? 'pr-8 text-right' : 'pl-8'}`}>
                 <TopicCard topic={topic} />
               </div>
               
-              {/* Timeline marker */}
               <div className="relative">
                 <div className={`
                   w-6 h-6 rounded-full border-4 z-10 relative transition-colors duration-300
@@ -182,7 +232,6 @@ const LearningPath = () => {
                 )}
               </div>
               
-              {/* Empty side for spacing */}
               <div className="w-1/2" />
             </div>
           ))}
