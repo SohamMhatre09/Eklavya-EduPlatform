@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   BookOpen,
   Brain,
@@ -136,12 +136,13 @@ interface TopicCardProps {
 }
 
 const TopicCard = ({ topic, user }: TopicCardProps) => {
+  const navigate = useNavigate();
   const IconComponent = topic.icon;
 
   const handleClick = (e: React.MouseEvent) => {
     if (!user) {
       e.preventDefault();
-      window.location.href = "/login";
+      navigate("/login");
     }
   };
 

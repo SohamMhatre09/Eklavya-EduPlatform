@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   ChevronLeft,
   ChevronRight,
@@ -54,9 +54,10 @@ const questionsData: Record<number, Question[]> = {
 
 const TopicContent = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   if (!user) {
-    return <Navigate to="/login" />;
+    navigate("/login");
   }
   const { topicId } = useParams();
   const currentTopic = topics.find((t) => t.id === Number(topicId));
