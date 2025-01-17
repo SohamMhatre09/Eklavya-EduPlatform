@@ -308,7 +308,7 @@ const LearningPath = () => {
         </div>
 
         {!user && (
-          <div className="text-center mt-8 p-6 bg-gray-50 rounded-xl">
+          <div className="text-center mt-8 p-6 bg-gray-50 rounded-xl z-10">
             <p className="text-gray-600 mb-4">
               Log in to access all topics and track your progress
             </p>
