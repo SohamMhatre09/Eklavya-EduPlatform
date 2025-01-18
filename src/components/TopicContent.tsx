@@ -32,11 +32,11 @@ const TopicContent = () => {
 
   // State for practice questions
   const [showQuestions, setShowQuestions] = useState(false);
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>(
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>(
     {}
   );
   const [showExplanations, setShowExplanations] = useState<
-    Record<number, boolean>
+    Record<string, boolean>
   >({});
 
   // Handle case where topic or subtopic is not found
@@ -48,7 +48,7 @@ const TopicContent = () => {
   const readingTime = Math.ceil(currentSubtopic.theory.length / 200); // 200 words per minute
 
   // Handle answer selection for MCQs
-  const handleAnswerSelect = (questionId: number, answerIndex: number) => {
+  const handleAnswerSelect = (questionId: string, answerIndex: number) => {
     setSelectedAnswers((prev) => ({ ...prev, [questionId]: answerIndex }));
     setShowExplanations((prev) => ({ ...prev, [questionId]: true }));
   };
@@ -77,7 +77,9 @@ const TopicContent = () => {
           </Link>
           <div
             className={`w-12 h-12 rounded-full flex items-center justify-center ${
-              "bg-blue-500 text-white"
+              currentTopic.completed
+                ? "bg-green-500 text-white"
+                : "bg-blue-500 text-white"
             }`}
           >
             <IconComponent className="w-6 h-6" />
@@ -130,37 +132,44 @@ print(y)  # Output: [1 4 9]`}</code>
 
         {showQuestions && (
           <div className="mt-8 space-y-6">
-            {currentSubtopic.mcqs.map((question) => (
-              <div
-                key={question.question}
-                className="bg-white rounded-2xl p-8 border border-gray-100"
-              >
-                <h3 className="text-xl font-medium text-gray-900 mb-6">
-                  {question.question}
-                </h3>
-                <div className="space-y-3">
-                  {question.options.map((option, index) => {
-                    const isSelected = selectedAnswers[question.id] === index;
-                    const isCorrect = question.answer === option;
-                    const showResult = showExplanations[question.id];
+            {currentSubtopic.mcqs.map((question, index) => {
+              const questionId = `${subtopicId}-${index}`; // Unique question ID
+              const isSelected = selectedAnswers[questionId] !== undefined;
+              const selectedAnswer = selectedAnswers[questionId];
+              const isCorrect =
+                selectedAnswer !== undefined &&
+                question.options[selectedAnswer] === question.answer;
+              const showExplanation = showExplanations[questionId];
 
-                    return (
+              return (
+                <div
+                  key={questionId}
+                  className="bg-white rounded-2xl p-8 border border-gray-100"
+                >
+                  <h3 className="text-xl font-medium text-gray-900 mb-6">
+                    {question.question}
+                  </h3>
+                  <div className="space-y-3">
+                    {question.options.map((option, optionIndex) => (
                       <button
-                        key={index}
-                        onClick={() => handleAnswerSelect(question.id, index)}
+                        key={optionIndex}
+                        onClick={() => handleAnswerSelect(questionId, optionIndex)}
                         className={`w-full text-left p-4 rounded-xl transition-all transform hover:scale-[1.02]
                           ${
-                            isSelected && showResult
-                              ? isCorrect
-                                ? "bg-green-50 border-green-500 text-green-700"
-                                : "bg-red-50 border-red-500 text-red-700"
+                            isSelected && showExplanation
+                              ? optionIndex === selectedAnswer
+                                ? isCorrect
+                                  ? "bg-green-50 border-green-500 text-green-700"
+                                  : "bg-red-50 border-red-500 text-red-700"
+                                : "bg-gray-50 hover:bg-gray-100"
                               : "bg-gray-50 hover:bg-gray-100"
                           }`}
                       >
                         <div className="flex items-center justify-between">
                           <span>{option}</span>
                           {isSelected &&
-                            showResult &&
+                            showExplanation &&
+                            optionIndex === selectedAnswer &&
                             (isCorrect ? (
                               <CheckCircle className="w-5 h-5 text-green-500" />
                             ) : (
@@ -168,24 +177,21 @@ print(y)  # Output: [1 4 9]`}</code>
                             ))}
                         </div>
                       </button>
-                    );
-                  })}
-                </div>
-                {showExplanations[question.id] && (
-                  <div
-                    className={`mt-6 p-6 rounded-xl ${
-                      selectedAnswers[question.id] ===
-                      question.options.indexOf(question.answer)
-                        ? "bg-green-50 text-green-700"
-                        : "bg-red-50 text-red-700"
-                    }`}
-                  >
-                    <p className="font-medium mb-2">Explanation:</p>
-                    <p>{question.answer}</p>
+                    ))}
                   </div>
-                )}
-              </div>
-            ))}
+                  {showExplanation && (
+                    <div
+                      className={`mt-6 p-6 rounded-xl ${
+                        isCorrect ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+                      }`}
+                    >
+                      <p className="font-medium mb-2">Explanation:</p>
+                      <p>{question.answer}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 
