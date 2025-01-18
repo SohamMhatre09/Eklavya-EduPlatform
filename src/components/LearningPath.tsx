@@ -10,144 +10,68 @@ import {
   Settings,
   Cloud,
   Terminal,
-  LucideProps,
 } from "lucide-react";
 import { useAuth } from "./AuthContext";
+import machineLearningData from "./data";
 
-export const topics = [
-  {
-    id: 1,
-    title: "Foundations of AI & ML",
-    completed: false,
-    icon: BookOpen,
-    side: "left",
-    subtopics: [
-      "AI vs ML vs Deep Learning",
-      "Types of Machine Learning",
-      "ML Development Lifecycle",
-      "Data Science Environment Setup",
-    ],
-  },
-  {
-    id: 2,
-    title: "Working with Pre-trained Models",
-    completed: false,
-    icon: Brain,
-    side: "right",
-    subtopics: [
-      "Understanding Model Capabilities",
-      "Model Selection Criteria",
-      "Fine-tuning Strategies",
-      "Model Evaluation Metrics",
-    ],
-  },
-  {
-    id: 3,
-    title: "Data Engineering for AI",
-    completed: false,
-    icon: Database,
-    side: "left",
-    subtopics: [
-      "Data Preprocessing Pipelines",
-      "Feature Engineering",
-      "Data Validation & Quality",
-      "ETL Processes",
-    ],
-  },
-  {
-    id: 4,
-    title: "ML Model Development",
-    completed: false,
-    icon: BarChart2,
-    side: "right",
-    subtopics: [
-      "Supervised Learning Techniques",
-      "Unsupervised Learning Methods",
-      "Model Optimization",
-      "Ensemble Approaches",
-    ],
-  },
-  {
-    id: 5,
-    title: "AI Systems Integration",
-    completed: false,
-    icon: Settings,
-    side: "left",
-    subtopics: [
-      "API Development",
-      "Model Serving",
-      "System Architecture",
-      "Performance Optimization",
-    ],
-  },
-  {
-    id: 6,
-    title: "MLOps & Deployment",
-    completed: false,
-    icon: Cloud,
-    side: "right",
-    subtopics: [
-      "Model Versioning",
-      "Deployment Strategies",
-      "Monitoring & Logging",
-      "Infrastructure Management",
-    ],
-  },
-  {
-    id: 7,
-    title: "AI Safety & Ethics",
-    completed: false,
-    icon: Shield,
-    side: "left",
-    subtopics: [
-      "Responsible AI Development",
-      "Bias Detection & Mitigation",
-      "Privacy Considerations",
-      "Security Best Practices",
-    ],
-  },
-  {
-    id: 8,
-    title: "Advanced AI Engineering",
-    completed: false,
-    icon: Terminal,
-    side: "right",
-    subtopics: [
-      "Large Language Models",
-      "Custom Model Development",
-      "Scaling AI Systems",
-      "Production Optimization",
-    ],
-  },
-];
+const icons = {
+  BookOpen,
+  Brain,
+  Code,
+  Database,
+  Shield,
+  BarChart2,
+  Settings,
+  Cloud,
+  Terminal,
+};
+
+const topics = machineLearningData.map((path, index) => ({
+  id: path.path_id.toString(),
+  title: path.title,
+  description: path.description,
+  icon: BookOpen, // Default to BookOpen if icon is not found
+  completed: false, // You can set this based on user progress
+  side: index % 2 === 0 ? "left" : "right", // Alternate sides for layout
+  subtopics: path.topics.map((topic) => topic.title),
+}));
 
 interface Topic {
-  id: number;
+  id: string;
   title: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
   completed: boolean;
-  icon: React.ComponentType<LucideProps>;
   side: string;
   subtopics: string[];
 }
 
 interface TopicCardProps {
   topic: Topic;
-  user: any; // Add proper type based on your user object structure
+  user: any; // Replace 'any' with the appropriate type if available
 }
 
-const TopicCard = ({ topic, user }: TopicCardProps) => {
+const TopicCard: React.FC<TopicCardProps> = ({ topic, user }) => {
   const navigate = useNavigate();
   const IconComponent = topic.icon;
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     if (!user) {
       e.preventDefault();
       navigate("/login");
     }
   };
 
+  // Find the first subtopic ID for the topic
+  const firstSubtopicId = machineLearningData
+    .find((path) => path.path_id.toString() === topic.id)
+    ?.topics[0]?.id;
+
   return (
-    <Link to={`/topic/${topic.id}`} onClick={handleClick}>
+    <Link
+      to={user ? `/topic/${topic.id}/subtopic/${firstSubtopicId}` : "#"}
+      onClick={handleClick}
+    >
       <div
         className={`
           relative bg-white border-2 rounded-lg p-4 transition-all duration-200
@@ -171,7 +95,7 @@ const TopicCard = ({ topic, user }: TopicCardProps) => {
               {topic.title}
             </h3>
             <div className="space-y-1">
-              {topic.subtopics.map((subtopic: string, idx: number) => (
+              {topic.subtopics.map((subtopic, idx) => (
                 <p
                   key={idx}
                   className="text-gray-500 text-xs flex items-center gap-1.5"

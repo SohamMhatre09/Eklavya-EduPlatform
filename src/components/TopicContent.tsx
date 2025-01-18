@@ -7,84 +7,62 @@ import {
   ArrowLeft,
   CheckCircle,
   XCircle,
+  BookOpen, // Fallback icon
 } from "lucide-react";
-import { topics } from "./LearningPath";
 import { useAuth } from "./AuthContext";
-import { Navigate } from "react-router-dom";
-
-interface Question {
-  id: number;
-  text: string;
-  options: string[];
-  correctAnswer: number;
-  explanation: string;
-}
-
-const questionsData: Record<number, Question[]> = {
-  1: [
-    {
-      id: 1,
-      text: "What is the primary role of an AI Engineer?",
-      options: [
-        "Only writing documentation",
-        "Developing and deploying AI solutions",
-        "Managing HR",
-        "Website design",
-      ],
-      correctAnswer: 1,
-      explanation:
-        "AI Engineers are primarily responsible for developing, implementing, and maintaining AI solutions. They work on creating models, integrating AI systems, and ensuring their effective deployment.",
-    },
-    {
-      id: 2,
-      text: "Which of these is NOT typically part of an AI Engineer's responsibilities?",
-      options: [
-        "Model training",
-        "Data preprocessing",
-        "Sales and marketing",
-        "System integration",
-      ],
-      correctAnswer: 2,
-      explanation:
-        "Sales and marketing are not typically part of an AI Engineer's core responsibilities. Their focus is on technical aspects like model development, training, and implementation.",
-    },
-  ],
-  // Add questions for other topics similarly
-};
+import machineLearningData from "./data"; // Import machineLearningData
 
 const TopicContent = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { topicId, subtopicId } = useParams();
 
+  // Redirect to login if user is not authenticated
   if (!user) {
     navigate("/login");
   }
-  const { topicId } = useParams();
-  const currentTopic = topics.find((t) => t.id === Number(topicId));
+
+  // Find the current topic and subtopic
+  const currentTopic = machineLearningData.find(
+    (topic) => topic.path_id.toString() === topicId
+  );
+  const currentSubtopic = currentTopic?.topics.find(
+    (subtopic) => subtopic.id.toString() === subtopicId
+  );
+
+  // State for practice questions
   const [showQuestions, setShowQuestions] = useState(false);
-  const [selectedAnswers, setSelectedAnswers] = useState<
-    Record<number, number>
-  >({});
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>(
+    {}
+  );
   const [showExplanations, setShowExplanations] = useState<
     Record<number, boolean>
   >({});
 
-  const currentIndex = topics.findIndex((t) => t.id === Number(topicId));
-  const prevTopic = currentIndex > 0 ? topics[currentIndex - 1] : null;
-  const nextTopic =
-    currentIndex < topics.length - 1 ? topics[currentIndex + 1] : null;
-
-  const questions = questionsData[Number(topicId)] || [];
-  const readingTime = Math.ceil(currentTopic?.subtopics.length || 0 * 5);
-
-  if (!currentTopic) {
-    return <div>Topic not found</div>;
+  // Handle case where topic or subtopic is not found
+  if (!currentTopic || !currentSubtopic) {
+    return <div>Topic or Subtopic not found</div>;
   }
 
+  // Calculate reading time based on subtopic content
+  const readingTime = Math.ceil(currentSubtopic.theory.length / 200); // 200 words per minute
+
+  // Handle answer selection for MCQs
   const handleAnswerSelect = (questionId: number, answerIndex: number) => {
     setSelectedAnswers((prev) => ({ ...prev, [questionId]: answerIndex }));
     setShowExplanations((prev) => ({ ...prev, [questionId]: true }));
   };
+
+  // Fallback icon if currentTopic.icon is undefined
+  const IconComponent = BookOpen; // Use BookOpen as a fallback
+
+  // Logic for next and back buttons
+  const currentSubtopicIndex = currentTopic.topics.findIndex(
+    (subtopic) => subtopic.id.toString() === subtopicId
+  );
+
+  const nextSubtopic = currentTopic.topics[currentSubtopicIndex + 1];
+  const prevSubtopic = currentTopic.topics[currentSubtopicIndex - 1];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -98,18 +76,15 @@ const TopicContent = () => {
             <ArrowLeft className="w-6 h-6" />
           </Link>
           <div
-            className={`w-12 h-12 rounded-full flex items-center justify-center
-            ${
-              currentTopic.completed
-                ? "bg-green-500 text-white"
-                : "bg-blue-500 text-white"
+            className={`w-12 h-12 rounded-full flex items-center justify-center ${
+              "bg-blue-500 text-white"
             }`}
           >
-            <currentTopic.icon className="w-6 h-6" />
+            <IconComponent className="w-6 h-6" />
           </div>
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-gray-900 mb-1">
-              {currentTopic.title}
+              {currentSubtopic.title}
             </h1>
             <div className="flex items-center gap-2 text-gray-500">
               <Clock className="w-4 h-4" />
@@ -122,9 +97,7 @@ const TopicContent = () => {
         <div className="bg-white rounded-2xl shadow-sm p-8 mb-8 border border-gray-100">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Overview</h2>
           <p className="text-gray-600 leading-relaxed">
-            This section covers everything you need to know about{" "}
-            {currentTopic.title.toLowerCase()}. We'll explore the following
-            topics in detail with examples and interactive elements.
+            {currentSubtopic.theory}
           </p>
         </div>
 
@@ -138,35 +111,11 @@ const TopicContent = () => {
           <pre className="text-gray-300 font-mono text-sm">
             <code>{`import numpy as np
 
-# Example code for ${currentTopic.title}
+# Example code for ${currentSubtopic.title}
 x = np.array([1, 2, 3])
 y = x ** 2
 print(y)  # Output: [1 4 9]`}</code>
           </pre>
-        </div>
-
-        {/* Subtopics */}
-        <div className="space-y-4">
-          {currentTopic.subtopics.map((subtopic, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-2xl p-6 border border-gray-100 hover:border-blue-500 transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center">
-                  {index + 1}
-                </div>
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">
-                    {subtopic}
-                  </h3>
-                  <p className="text-gray-500 text-sm mt-1">
-                    Click to explore {subtopic.toLowerCase()}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
 
         {/* Practice Questions */}
@@ -181,18 +130,18 @@ print(y)  # Output: [1 4 9]`}</code>
 
         {showQuestions && (
           <div className="mt-8 space-y-6">
-            {questions.map((question) => (
+            {currentSubtopic.mcqs.map((question) => (
               <div
-                key={question.id}
+                key={question.question}
                 className="bg-white rounded-2xl p-8 border border-gray-100"
               >
                 <h3 className="text-xl font-medium text-gray-900 mb-6">
-                  {question.text}
+                  {question.question}
                 </h3>
                 <div className="space-y-3">
                   {question.options.map((option, index) => {
                     const isSelected = selectedAnswers[question.id] === index;
-                    const isCorrect = question.correctAnswer === index;
+                    const isCorrect = question.answer === option;
                     const showResult = showExplanations[question.id];
 
                     return (
@@ -225,13 +174,14 @@ print(y)  # Output: [1 4 9]`}</code>
                 {showExplanations[question.id] && (
                   <div
                     className={`mt-6 p-6 rounded-xl ${
-                      selectedAnswers[question.id] === question.correctAnswer
+                      selectedAnswers[question.id] ===
+                      question.options.indexOf(question.answer)
                         ? "bg-green-50 text-green-700"
                         : "bg-red-50 text-red-700"
                     }`}
                   >
                     <p className="font-medium mb-2">Explanation:</p>
-                    <p>{question.explanation}</p>
+                    <p>{question.answer}</p>
                   </div>
                 )}
               </div>
@@ -241,26 +191,28 @@ print(y)  # Output: [1 4 9]`}</code>
 
         {/* Navigation */}
         <div className="flex justify-between items-center mt-8 py-6 border-t border-gray-200">
-          {prevTopic ? (
+          {prevSubtopic ? (
             <Link
-              to={`/topic/${prevTopic.id}`}
+              to={`/topic/${topicId}/subtopic/${prevSubtopic.id}`}
               className="flex items-center gap-2 text-gray-600 hover:text-blue-500 transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
-              <span>Previous: {prevTopic.title}</span>
+              <span>Back: {prevSubtopic.title}</span>
             </Link>
           ) : (
             <div></div>
           )}
 
-          {nextTopic && (
+          {nextSubtopic ? (
             <Link
-              to={`/topic/${nextTopic.id}`}
+              to={`/topic/${topicId}/subtopic/${nextSubtopic.id}`}
               className="flex items-center gap-2 text-gray-600 hover:text-blue-500 transition-colors"
             >
-              <span>Next: {nextTopic.title}</span>
+              <span>Next: {nextSubtopic.title}</span>
               <ChevronRight className="w-5 h-5" />
             </Link>
+          ) : (
+            <div></div>
           )}
         </div>
       </div>

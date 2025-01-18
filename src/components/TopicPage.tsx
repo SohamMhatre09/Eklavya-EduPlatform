@@ -1,15 +1,21 @@
-// ProgressBar.js
-
-// TopicPage.js
 import React, { useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import ProgressBar from './ProgressBar';
+import machineLearningData from './data';
 
 const TopicPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { topicId } = useParams();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
+  const currentTopic = machineLearningData.find(topic => topic.path_id.toString() === topicId);
+
+  if (!currentTopic) {
+    return <div>Topic not found</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 lg:p-6">
@@ -44,22 +50,14 @@ const TopicPage = () => {
             </button>
           </div>
           <ul className="space-y-3">
-            <li className="flex items-center text-green-500">
-              <span className="mr-2">✓</span>
-              <span>Introduction</span>
-            </li>
-            <li className="flex items-center text-green-500">
-              <span className="mr-2">✓</span>
-              <span>Basic Concepts</span>
-            </li>
-            <li className="flex items-center text-yellow-400">
-              <span className="mr-2">•</span>
-              <span>Advanced Topics</span>
-            </li>
-            <li className="flex items-center text-gray-400">
-              <span className="mr-2">•</span>
-              <span>Practice Projects</span>
-            </li>
+            {currentTopic.topics.map((subtopic, index) => (
+              <li key={subtopic.id} className="flex items-center text-gray-400">
+                <span className="mr-2">•</span>
+                <Link to={`/topic/${topicId}/subtopic/${subtopic.id}`}>
+                  <span>{subtopic.title}</span>
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -67,13 +65,13 @@ const TopicPage = () => {
         <div className="lg:col-span-9 bg-white rounded-xl shadow-sm p-4 lg:p-6">
           <div className="mb-6">
             <h1 className="text-xl lg:text-2xl font-bold text-gray-900 mb-4">
-              Supervised Learning
+              {currentTopic.title}
             </h1>
             <ProgressBar progress={75} />
           </div>
 
           <div className="prose max-w-none">
-            <p>Content will go here...</p>
+            <p>{currentTopic.description}</p>
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between gap-4 mt-8">
